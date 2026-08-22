@@ -393,17 +393,17 @@
         } else if (wrongCategoryWord) {
           const hint = getRandomHints(category, 1)[0];
           if (category === 'facility') {
-            speakTeacher(`「${wrongCategoryWord.name}」是課室裏的物品哦！請問學校裏有甚麼地方呢？例如有「${hint}」，請再試一次吧！`);
+            speakTeacher(`「${wrongCategoryWord.name}」是課室裏的物品哦！請問學校裏有什麼地方呢？例如有「${hint}」，請再試一次吧！`);
             setFeedback(`❌ 「${wrongCategoryWord.name}」是課室物品。請試著說出學校的地方（如：${hint}）！`, 'error');
           } else {
-            speakTeacher(`「${wrongCategoryWord.name}」是學校的地方哦！請問課室裏有甚麼物品呢？例如有「${hint}」，請再試一次吧！`);
+            speakTeacher(`「${wrongCategoryWord.name}」是學校的地方哦！請問課室裏有什麼物品呢？例如有「${hint}」，請再試一次吧！`);
             setFeedback(`❌ 「${wrongCategoryWord.name}」是學校的地方。請試著說出課室裏的物品（如：${hint}）！`, 'error');
           }
         
         } else {
           const hints = getRandomHints(category, 2);
           const questionText = category === 'facility' ? '學校裏' : '課室裏';
-          speakTeacher(`這好像不太對哦，請再想一想。${questionText}有甚麼呢？例如可以是${hints[0]}，或者${hints[1]}，請再試一次吧！`);
+          speakTeacher(`這好像不太對哦，請再想一想。${questionText}有什麼呢？例如可以是${hints[0]}，或者${hints[1]}，請再試一次吧！`);
           setFeedback(`❌ 沒聽清楚或答錯了，請再試一次！例如可以說「${hints[0]}」。`, 'error');
         }
 
@@ -422,7 +422,7 @@
             step = 'ask';
             targetWord = null;
             renderVocabCards();
-            const nextQuestion = category === 'facility' ? '學校裏有甚麼地方？' : '課室裏有甚麼物品？';
+            const nextQuestion = category === 'facility' ? '學校裏有什麼地方？' : '課室裏有什麼物品？';
             speakTeacher(`太棒了！我們看下一題。${nextQuestion}`);
             setFeedback('✅ 說得很好！準備下一題。', 'success');
           }
