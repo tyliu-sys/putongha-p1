@@ -1,0 +1,539 @@
+[Mandarin_Practice_P1.html](https://github.com/user-attachments/files/31331568/Mandarin_Practice_P1.html)
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一年級_齊讀普通話</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .listening-pulse {
+      animation: pulse-ring 1.8s infinite;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-sky-50 to-indigo-100 min-h-screen text-gray-800 p-3 sm:p-6 flex flex-col items-center">
+
+  <div id="app" class="w-full max-w-2xl flex flex-col items-center">
+
+    <!-- 開始前的說明畫面 -->
+    <div id="start-screen" class="bg-white p-6 sm:p-8 rounded-3xl shadow-xl max-w-md w-full border-4 border-indigo-200 text-center my-auto my-8">
+      <div class="text-6xl mb-4">📚</div>
+      <h1 class="text-2xl font-bold text-indigo-900 mb-2">一年級_齊讀普通話</h1>
+      <p class="text-gray-600 mb-6 font-medium text-left leading-relaxed">請同學和AI語音老師進行説話練習，說出學校裏的地方和課室裏的物品，只要完成練習，就可以得到一份小禮物。</p>
+      
+      <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 mb-6 text-sm text-amber-800 text-left">
+        <p class="font-bold mb-1 flex items-center gap-1">💡 系統提示：</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>為了聽到老師聲音，請點擊下方按鈕開始。</li>
+          <li><strong>操作時，請允許網頁開放麥克風錄音，以便您用語音回答問題。</strong></li>
+          <li>錄音結束後系統會<strong>自動為你送出答案</strong>。</li>
+          <li>支援發音模糊與同音字容錯（如把「音樂室」讀作「音樂是」也可答對）。</li>
+        </ul>
+      </div>
+
+      <button id="start-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg mb-4">
+        ▶️ 點擊開始練習
+      </button>
+
+      <button id="download-self-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow transition active:scale-95 text-sm flex items-center justify-center gap-2">
+        📥 一鍵下載此 .html 檔案
+      </button>
+    </div>
+
+    <!-- 遊戲主畫面（初始隱藏） -->
+    <div id="game-screen" class="w-full hidden flex-col gap-4">
+      
+      <!-- 頂部標題與星級 -->
+      <header class="w-full bg-white rounded-2xl p-4 shadow-md flex items-center justify-between">
+        <div class="flex flex-col">
+          <h1 class="text-base sm:text-lg font-bold text-indigo-900">🗣️ 普通話說話練習</h1>
+          <p class="text-xs text-indigo-600">集滿 3 顆星即可過關！</p>
+        </div>
+        <div class="flex gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200 shadow-inner">
+          <span id="star-1" class="text-xl opacity-20 transition-all">⭐</span>
+          <span id="star-2" class="text-xl opacity-20 transition-all">⭐</span>
+          <span id="star-3" class="text-xl opacity-20 transition-all">⭐</span>
+        </div>
+      </header>
+
+      <!-- 陳老師區塊 -->
+      <div class="bg-white rounded-3xl p-5 shadow-lg border-2 border-indigo-100 flex flex-col items-center relative">
+        <div id="teacher-avatar" class="text-6xl mb-3 transition-transform duration-300">
+          👩‍🏫
+        </div>
+        <div class="w-full bg-indigo-50 rounded-xl p-4 border border-indigo-100 relative">
+          <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-indigo-50 border-t border-l border-indigo-100 rotate-45"></div>
+          <p id="teacher-text" class="text-lg sm:text-xl font-bold text-indigo-900 text-center relative z-10 leading-relaxed">
+            「你好！今天我們一起認識校園吧！」
+          </p>
+        </div>
+        
+        <button id="replay-btn" class="mt-3 text-indigo-500 hover:text-indigo-700 text-xs flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm active:scale-95 transition">
+          🔊 點擊重聽
+        </button>
+      </div>
+
+      <!-- 反饋訊息提示 -->
+      <div id="feedback-box" class="w-full text-center p-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors bg-emerald-100 text-emerald-800">
+        等待回答中...
+      </div>
+
+      <!-- 答題與輸入控制區 -->
+      <div class="bg-white rounded-3xl p-4 sm:p-6 shadow-lg border-2 border-gray-100">
+        <h3 id="question-title" class="text-sm font-bold text-gray-700 mb-3 text-center border-b pb-2">
+          👇 請回答學校裏有甚麼地方？ 👇
+        </h3>
+        
+        <!-- 麥克風按鈕 -->
+        <div class="flex justify-center mb-6">
+          <button id="mic-btn" class="flex flex-col items-center justify-center p-4 rounded-full shadow-lg transition-all duration-300 w-28 h-28 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white">
+            <span id="mic-icon" class="text-3xl mb-1">🎙️</span>
+            <span id="mic-text" class="text-[11px] font-bold tracking-wide">點擊開始錄音</span>
+          </button>
+        </div>
+
+        <!-- 文字輸入與送出 -->
+        <form id="answer-form" class="flex gap-2 mb-6">
+          <input
+            type="text"
+            id="text-input"
+            placeholder="你的回答會出現在這裡..."
+            class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-blue-500 font-medium text-indigo-900"
+          />
+          <button
+            type="submit"
+            class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 rounded-xl shadow transition active:scale-95 flex items-center gap-1"
+          >
+            🚀 送出
+          </button>
+        </form>
+
+        <!-- 詞彙圖片卡片 -->
+        <div class="bg-gray-50 rounded-2xl p-3 border border-gray-200">
+          <p class="text-xs text-center text-gray-500 mb-2">不知道怎麼說？直接點擊下方圖片回答</p>
+          <div id="vocab-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            <!-- 由 JavaScript 動態生成卡片 -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 過關畫面 -->
+    <div id="done-screen" class="w-full hidden bg-white rounded-3xl p-8 text-center shadow-xl border-4 border-emerald-100 my-auto my-8">
+      <div class="text-7xl mb-4">🏆</div>
+      <h2 class="text-2xl font-extrabold text-emerald-800 mb-2">太厲害了！🎉</h2>
+      <p class="text-emerald-600 mb-8 text-lg font-medium">你已成功完成練習！</p>
+      <button id="restart-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 mx-auto">
+        🔄 再練一次
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    // === 簡轉繁字典 ===
+    const SIMPLIFIED_TO_TRADITIONAL = {
+      '图': '圖', '书': '書', '馆': '館', '课': '課', 
+      '电': '電', '脑': '腦', '礼': '禮', '场': '場',
+      '柜': '櫃', '笔': '筆', '学': '學', '校': '校',
+      '里': '裏', '么': '麼', '说': '說', '师': '師',
+      '对': '對', '错': '錯', '没': '没', '关': '關',
+      '系': '係', '这': '這', '吗': '嗎', '样': '樣', 
+      '个': '個', '们': '們', '会': '會', '乐': '樂',
+      '动': '動', '运': '運', '画': '畫', '辞': '辭'
+    };
+
+    function convertToTraditional(text) {
+      if (!text) return '';
+      return text.split('').map(char => SIMPLIFIED_TO_TRADITIONAL[char] || char).join('');
+    }
+
+    // === 數據庫：香港小一校園設施與課室用品 (含同音字與模糊語音匹配) ===
+    const VOCAB_DATA = {
+      facilities: [
+        { name: '圖書館', pinyin: 'tú shū guǎn', icon: '📚', alt: ['圖書館', '圖書', '圖書館裏', '圖書管', '圖書官', '塗書館', '圖書廣'] },
+        { name: '課室', pinyin: 'kè shì', icon: '🏫', alt: ['課室', '教室', '客室', '課室裏', '課是', '課試', '刻室', '客是'] },
+        { name: '電腦室', pinyin: 'diàn nǎo shì', icon: '💻', alt: ['電腦室', '電腦房', '電腦是', '電腦試', '電腦事', '電惱室'] },
+        { name: '音樂室', pinyin: 'yīn yuè shì', icon: '🎵', alt: ['音樂室', '音樂房', '音樂是', '音樂事', '音樂試', '音樂世', '因樂室', '陰樂室'] },
+        { name: '禮堂', pinyin: 'lǐ táng', icon: '🏛️', alt: ['禮堂', '大禮堂', '李堂', '理堂', '禮糖', '里堂'] },
+        { name: '操場', pinyin: 'cāo chǎng', icon: '🏃', alt: ['操場', '運動場', '廣場', '草場', '曹場', '操廠', '草廠'] }
+      ],
+      classroomItems: [
+        { name: '桌子', pinyin: 'zhuō zi', icon: '🪑', alt: ['桌子', '課桌', '書桌', '桌', '捉子', '拙子', '捉紫'] },
+        { name: '椅子', pinyin: 'yǐ zi', icon: '🪑', alt: ['椅子', '凳子', '椅', '乙子', '以子', '椅紫'] },
+        { name: '黑板', pinyin: 'hēi bǎn', icon: '⬛', alt: ['黑板', '白板', '黑辦', '黑半', '黑榜', '嘿板'] },
+        { name: '書櫃', pinyin: 'shū guì', icon: '🗄️', alt: ['書櫃', '書架', '舒櫃', '書貴', '輸櫃', '書跪'] },
+        { name: '電腦', pinyin: 'diàn nǎo', icon: '🖥️', alt: ['電腦', '計算機', '電惱', '墊腦'] },
+        { name: '圖書', pinyin: 'tú shū', icon: '📖', alt: ['圖書', '書本', '課本', '書', '塗書', '圖舒', '圖輸'] },
+        { name: '粉筆', pinyin: 'fěn bǐ', icon: '✏️', alt: ['粉筆', '彩筆', '分筆', '粉比', '紛筆'] }
+      ]
+    };
+
+    function getRandomHints(category, count = 2) {
+      const list = category === 'facility' ? VOCAB_DATA.facilities : VOCAB_DATA.classroomItems;
+      const shuffled = [...list].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count).map(item => item.name);
+    }
+
+    // === 遊戲核心狀態 ===
+    let stars = 0;
+    let step = 'ask'; // 'ask', 'repeat', 'done'
+    let category = 'facility'; // 'facility' or 'item'
+    let targetWord = null;
+    let isListening = false;
+    let isSpeaking = false;
+    let currentTeacherText = '';
+
+    // DOM 元素引用
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const doneScreen = document.getElementById('done-screen');
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const downloadSelfBtn = document.getElementById('download-self-btn');
+    
+    const teacherAvatar = document.getElementById('teacher-avatar');
+    const teacherTextEl = document.getElementById('teacher-text');
+    const replayBtn = document.getElementById('replay-btn');
+    const feedbackBox = document.getElementById('feedback-box');
+    const questionTitle = document.getElementById('question-title');
+    
+    const micBtn = document.getElementById('mic-btn');
+    const micIcon = document.getElementById('mic-icon');
+    const micText = document.getElementById('mic-text');
+    const answerForm = document.getElementById('answer-form');
+    const textInput = document.getElementById('text-input');
+    const vocabGrid = document.getElementById('vocab-grid');
+
+    // 語音引擎引用
+    const synth = window.speechSynthesis;
+    let recognition = null;
+    let speakTimeout = null;
+    let transcriptText = '';
+
+    // === 1. 老師語音發聲 (TTS) ===
+    function speakTeacher(text, callback) {
+      if (!synth) return;
+      
+      synth.cancel();
+      if (speakTimeout) clearTimeout(speakTimeout);
+
+      isSpeaking = true;
+      currentTeacherText = text;
+      teacherTextEl.innerText = `「${text}」`;
+      teacherAvatar.classList.add('scale-110', 'animate-bounce');
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      utterance.rate = 0.85;
+      utterance.pitch = 1.1;
+
+      const endSpeech = () => {
+        isSpeaking = false;
+        teacherAvatar.classList.remove('scale-110', 'animate-bounce');
+        if (callback) callback();
+      };
+
+      utterance.onend = () => {
+        if (speakTimeout) clearTimeout(speakTimeout);
+        endSpeech();
+      };
+      utterance.onerror = () => {
+        if (speakTimeout) clearTimeout(speakTimeout);
+        endSpeech();
+      };
+
+      synth.speak(utterance);
+      speakTimeout = setTimeout(endSpeech, (text.length * 450) + 1000);
+    }
+
+    // === 2. 初始化語音識別 (STT) ===
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'zh-TW';
+
+        recognition.onstart = () => {
+          isListening = true;
+          updateMicUI();
+          setFeedback('🎤 正在聆聽，請說話...', 'info');
+          transcriptText = '';
+          textInput.value = '';
+        };
+
+        recognition.onresult = (event) => {
+          let current = '';
+          for (let i = 0; i < event.results.length; i++) {
+            current += event.results[i][0].transcript;
+          }
+          current = convertToTraditional(current);
+          transcriptText = current;
+          textInput.value = current;
+        };
+
+        recognition.onerror = (event) => {
+          console.error('語音辨識錯誤:', event.error);
+          isListening = false;
+          updateMicUI();
+          if (event.error === 'not-allowed') {
+            setFeedback('⚠️ 麥克風權限被拒絕，請改用打字或點擊圖片。', 'error');
+          } else if (event.error === 'no-speech') {
+            setFeedback('⚠️ 沒有聽到聲音，請再按一次麥克風或直接打字。', 'error');
+          }
+        };
+
+        recognition.onend = () => {
+          isListening = false;
+          updateMicUI();
+          if (transcriptText.trim() !== '') {
+            processAnswer(transcriptText);
+          } else {
+            setFeedback('等待回答中...', 'info');
+          }
+        };
+      }
+    }
+
+    function toggleListening() {
+      if (!recognition) {
+        setFeedback('⚠️ 您的瀏覽器不支援錄音功能，請打字或點擊圖片。', 'error');
+        return;
+      }
+
+      if (isListening) {
+        recognition.stop();
+        setFeedback('錄音結束，處理中...', 'info');
+      } else {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    function updateMicUI() {
+      if (isListening) {
+        micBtn.className = 'flex flex-col items-center justify-center p-4 rounded-full shadow-lg transition-all duration-300 w-28 h-28 bg-red-500 listening-pulse text-white';
+        micIcon.innerText = '🛑';
+        micText.innerText = '點擊結束錄音';
+      } else {
+        micBtn.className = 'flex flex-col items-center justify-center p-4 rounded-full shadow-lg transition-all duration-300 w-28 h-28 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white';
+        micIcon.innerText = '🎙️';
+        micText.innerText = '點擊開始錄音';
+      }
+    }
+
+    // === 3. 反饋訊息更新 ===
+    function setFeedback(msg, type = 'info') {
+      feedbackBox.innerText = msg;
+      if (type === 'error') {
+        feedbackBox.className = 'w-full text-center p-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors bg-red-100 text-red-700';
+      } else {
+        feedbackBox.className = 'w-full text-center p-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors bg-emerald-100 text-emerald-800';
+      }
+    }
+
+    function updateStarsUI() {
+      for (let i = 1; i <= 3; i++) {
+        const starEl = document.getElementById(`star-${i}`);
+        if (i <= stars) {
+          starEl.classList.remove('opacity-20');
+          starEl.classList.add('opacity-100', 'scale-110');
+        } else {
+          starEl.classList.remove('opacity-100', 'scale-110');
+          starEl.classList.add('opacity-20');
+        }
+      }
+    }
+
+    // === 4. 核心遊戲判斷邏輯 ===
+    function processAnswer(answerText) {
+      if (!answerText || answerText.trim() === '') return;
+      
+      const input = convertToTraditional(answerText).toLowerCase();
+      textInput.value = '';
+      transcriptText = '';
+
+      if (step === 'ask') {
+        const correctList = category === 'facility' ? VOCAB_DATA.facilities : VOCAB_DATA.classroomItems;
+        const oppositeList = category === 'facility' ? VOCAB_DATA.classroomItems : VOCAB_DATA.facilities;
+
+        // 匹配正確詞彙（含同音字）
+        let matchedWord = correctList.find(word => input.includes(word.name) || word.alt.some(a => input.includes(a)));
+        // 匹配錯誤類別詞彙
+        let wrongCategoryWord = oppositeList.find(word => input.includes(word.name) || word.alt.some(a => input.includes(a)));
+
+        if (matchedWord) {
+          setTargetWord(matchedWord);
+          step = 'repeat';
+          const sentence = category === 'facility' ? `學校裏有${matchedWord.name}` : `課室裏有${matchedWord.name}`;
+          speakTeacher(`真棒！請跟我讀完整句子：${sentence}。`);
+          setFeedback('✅ 答對了！請跟讀老師說的完整句子。', 'success');
+        
+        } else if (wrongCategoryWord) {
+          const hint = getRandomHints(category, 1)[0];
+          if (category === 'facility') {
+            speakTeacher(`「${wrongCategoryWord.name}」是課室裏的物品哦！請問學校裏有甚麼地方呢？例如有「${hint}」，請再試一次吧！`);
+            setFeedback(`❌ 「${wrongCategoryWord.name}」是課室物品。請試著說出學校的地方（如：${hint}）！`, 'error');
+          } else {
+            speakTeacher(`「${wrongCategoryWord.name}」是學校的地方哦！請問課室裏有甚麼物品呢？例如有「${hint}」，請再試一次吧！`);
+            setFeedback(`❌ 「${wrongCategoryWord.name}」是學校的地方。請試著說出課室裏的物品（如：${hint}）！`, 'error');
+          }
+        
+        } else {
+          const hints = getRandomHints(category, 2);
+          const questionText = category === 'facility' ? '學校裏' : '課室裏';
+          speakTeacher(`這好像不太對哦，請再想一想。${questionText}有甚麼呢？例如可以是${hints[0]}，或者${hints[1]}，請再試一次吧！`);
+          setFeedback(`❌ 沒聽清楚或答錯了，請再試一次！例如可以說「${hints[0]}」。`, 'error');
+        }
+
+      } else if (step === 'repeat') {
+        if (targetWord && (input.includes(targetWord.name) || targetWord.alt.some(a => input.includes(a)))) {
+          stars += 1;
+          updateStarsUI();
+
+          if (stars >= 3) {
+            step = 'done';
+            showDoneScreen();
+            speakTeacher('太厲害了！你完成了今天的說話練習！');
+            setFeedback('🎉 恭喜過關！', 'success');
+          } else {
+            category = category === 'facility' ? 'item' : 'facility';
+            step = 'ask';
+            targetWord = null;
+            renderVocabCards();
+            const nextQuestion = category === 'facility' ? '學校裏有甚麼地方？' : '課室裏有甚麼物品？';
+            speakTeacher(`太棒了！我們看下一題。${nextQuestion}`);
+            setFeedback('✅ 說得很好！準備下一題。', 'success');
+          }
+        } else {
+          category = category === 'facility' ? 'item' : 'facility';
+          step = 'ask';
+          targetWord = null;
+          renderVocabCards();
+          const nextQuestion = category === 'facility' ? '學校裏有甚麼地方？' : '課室裏有甚麼物品？';
+          speakTeacher(`真勇敢！我們再來試試下一題吧。${nextQuestion}`);
+          setFeedback('💪 沒關係，我們繼續挑戰！', 'info');
+        }
+      }
+    }
+
+    function setTargetWord(word) {
+      targetWord = word;
+    }
+
+    // === 5. 動態渲染詞彙卡片 ===
+    function renderVocabCards() {
+      vocabGrid.innerHTML = '';
+      questionTitle.innerText = category === 'facility' ? '👇 請回答學校裏有甚麼地方？ 👇' : '👇 請回答課室裏有甚麼物品？ 👇';
+
+      const options = category === 'facility' ? VOCAB_DATA.facilities : VOCAB_DATA.classroomItems;
+      options.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'bg-white hover:bg-indigo-50 border border-gray-200 rounded-xl p-2 flex flex-col items-center justify-center transition shadow-sm active:bg-indigo-100 active:scale-95';
+        btn.innerHTML = `
+          <span class="text-2xl sm:text-3xl mb-1">${item.icon}</span>
+          <span class="text-xs font-bold text-gray-800">${item.name}</span>
+          <span class="text-[9px] text-gray-400">${item.pinyin}</span>
+        `;
+        btn.onclick = () => {
+          let textToSend = item.name;
+          if (step === 'repeat' && targetWord) {
+            textToSend = category === 'facility' ? `學校裏有${item.name}` : `課室裏有${item.name}`;
+          }
+          if (isListening && recognition) recognition.abort();
+          processAnswer(textToSend);
+        };
+        vocabGrid.appendChild(btn);
+      });
+    }
+
+    // === 6. 畫面切換與流程控制 ===
+    function startGame() {
+      if (synth) synth.speak(new SpeechSynthesisUtterance('')); // 激活 iOS WebSpeech
+      
+      stars = 0;
+      step = 'ask';
+      category = 'facility';
+      targetWord = null;
+
+      updateStarsUI();
+      renderVocabCards();
+
+      startScreen.classList.add('hidden');
+      doneScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+      gameScreen.classList.add('flex');
+
+      speakTeacher('你好！今天我們一起認識校園吧！學校裏有甚麼地方？');
+      setFeedback('等待回答中...', 'info');
+    }
+
+    function showDoneScreen() {
+      gameScreen.classList.add('hidden');
+      gameScreen.classList.remove('flex');
+      doneScreen.classList.remove('hidden');
+    }
+
+    // === 7. 一鍵下載 HTML 檔案功能 ===
+    function downloadSelf() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Mandarin_Practice_P1.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // === 8. 事件監聽與啟動 ===
+    window.addEventListener('DOMContentLoaded', () => {
+      initSpeechRecognition();
+
+      startBtn.onclick = startGame;
+      restartBtn.onclick = startGame;
+      downloadSelfBtn.onclick = downloadSelf;
+
+      replayBtn.onclick = () => speakTeacher(currentTeacherText);
+      micBtn.onclick = toggleListening;
+
+      answerForm.onsubmit = (e) => {
+        e.preventDefault();
+        if (textInput.value.trim()) {
+          if (isListening && recognition) recognition.abort();
+          processAnswer(textInput.value);
+        }
+      };
+
+      // 手動輸入即時簡轉繁
+      textInput.addEventListener('input', (e) => {
+        e.target.value = convertToTraditional(e.target.value);
+      });
+    });
+  </script>
+</body>
+</html>
